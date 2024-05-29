@@ -3,8 +3,8 @@ import ThirdLoginBar from '../components/ThirdLoginBar'
 @Entry
 @Component
 struct Index {
-  @State acount: string = 'Hello World';
-  @State password: string = 'abcdefg';
+  @State acount: string = '';
+  @State password: string = '';
 
   @State Password_ON: Resource = $r('app.media.pass_on');
   @State Password_OFF: Resource = $r('app.media.pass_off');
@@ -31,8 +31,12 @@ struct Index {
         TextInput({ text: this.acount, placeholder: '请输入用户账号' })
           .placeholderColor(Color.Gray)
           .placeholderFont({size: 14, weight: 400})
-          .showPasswordIcon(true)
           .backgroundColor(Color.Transparent)
+          .maxLength(8)
+          // .type(InputType.Email | InputType.PhoneNumber)
+          .onChange((value: string) => {
+            this.acount = value;
+          })
       }
       .justifyContent(FlexAlign.SpaceBetween)
       .width('100%')
@@ -43,7 +47,8 @@ struct Index {
 
       Row() {
         Text('密码：')
-        TextInput({ text: this.acount, placeholder: '请输入用户账号' })
+        TextInput({ text: this.password, placeholder: '请输入密码' })
+          .maxLength(8)
           .placeholderColor(Color.Gray)
           .placeholderFont({size: 14, weight: 400})
           .backgroundColor(Color.Transparent)
@@ -51,6 +56,9 @@ struct Index {
           .passwordIcon({
             onIconSrc: this.Password_ON,
             offIconSrc: this.Password_OFF
+          })
+          .onChange((value: string) => {
+            this.password = value;
           })
       }
       .justifyContent(FlexAlign.SpaceBetween)
