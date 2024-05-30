@@ -1,4 +1,6 @@
 import ThirdLoginBar from '../components/ThirdLoginBar'
+import { promptAction, router } from '@kit.ArkUI'
+import { Event } from '@kit.ArkTS';
 
 @Entry
 @Component
@@ -8,6 +10,29 @@ struct Index {
 
   @State Password_ON: Resource = $r('app.media.pass_on');
   @State Password_OFF: Resource = $r('app.media.pass_off');
+
+  @State showLoading: boolean = false;
+  private timeoutId: number = -1;
+
+  login():void {
+    if (this.acount === '' || this.password === '') {
+      promptAction.showToast({
+        message: '用户名or密码不能为空'
+      })
+    } else {
+      this.showLoading = true;
+      this.timeoutId = setTimeout(() => {
+        this.showLoading = false;
+        router.replaceUrl({ url: 'pages/TabController' })
+      }, 2000);
+    }
+  }
+
+  aboutToDisappear(): void {
+    clearTimeout(this.timeoutId)
+    this.timeoutId = -1;
+  }
+
 
   build() {
     Column() {
@@ -43,7 +68,7 @@ struct Index {
       .padding({right: 50})
       .margin({ top: 40 })
 
-      Line({ width: '100%'}).height(1).backgroundColor('#E4E4E4')
+      Line().lineStyle()
 
       Row() {
         Text('密码：')
@@ -66,7 +91,7 @@ struct Index {
       .padding({right: 50})
       .margin({ top: 20 })
 
-      Line({ width: '100%'}).height(1).backgroundColor('#E4E4E4')
+      Line().lineStyle()
 
       Row(){
         Text('短信验证码登录')
@@ -110,11 +135,19 @@ struct Index {
         .margin({ top: 80 })
         .width('80%')
         .backgroundColor(Color.Orange)
+        .onClick(() => {this.login()})
 
       Text('注册账号')
         .margin({top: 10})
         .fontColor(Color.Orange)
         .fontSize(14)
+
+      if (this.showLoading) {
+        LoadingProgress()
+          .width(40)
+          .height(40)
+          .margin({ top: 20 })
+      }
 
       ThirdLoginBar()
         .position({ y: '85%'})
@@ -127,4 +160,9 @@ struct Index {
     .alignItems(HorizontalAlign.Center)
     .padding(12)
   }
+}
+
+@Extend(Line)
+function lineStyle() {
+  .width('100%').height(1).backgroundColor('#E4E4E4')
 }
