@@ -21,7 +21,6 @@ struct ProgressEdit {
           .width('80%')
           .onChange((value, mode) => {
             this.progress = Math.trunc(value)
-            // console.log('mode ==== ' + mode)
             this.mode = mode
           })
 

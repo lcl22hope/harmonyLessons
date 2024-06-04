@@ -3,24 +3,27 @@ import Task from '../models/Task'
 import { CommonConstants } from '../constant/CommonConstant'
 import { ProgressEdit } from './ProgressEdit'
 import myTasks from '../models/Tasks'
+import { promptAction } from '@kit.ArkUI'
 
 @Entry
 @Component
 export default struct TaskItem {
   // 当前的任务；给一个默认值，方便调试
-  @State task: Task = new Task('task 1', currentTime(), 10)
+  @Prop task: Task //= new Task('task 1', currentTime(), 10)
   // 当前任务的序号
   index = 0
   // 总进度是否发生变化
-  @State totalProgressChanged: boolean = false
+  @Consume totalProgressChanged: boolean // = false
   //选中的任务组，来自上级，如果更新需要回传（@link）为了方便调试，暂用@State
-  @State selectedTasks: boolean[] = []
+  @Link selectedTasks: boolean[]
   //是否开启了编辑模式，由上级组件决定
   @Prop isEditMode: boolean = true
   //展开进度面板
   @State isExpanded: boolean = true
   //进度面板滑动模式，避免点击时和滑块点击冲突
   @State mode: SliderChangeMode = CommonConstants.DEFAULT_SLIDER_MODE
+
+  @Consume totalCheckedChanged: boolean
 
   // 点击的任务，保存其序号并回传（@link）为了调试方便，暂用@State
   // 并且监听点击，@Watch 处理函数changeIndex
@@ -59,7 +62,7 @@ export default struct TaskItem {
         .maxLines(CommonConstants.MAX_LINES)
       Blank()
       Column() { //进度信息
-        Text(`${this.task.progress}%`) //任务进度
+        Text(`${!this.latestProgress ? 0 : this.latestProgress}%`) //任务进度
         Row(){
           Text($r('app.string.latest_updateTime')).opacityTextStyle()
           Text(this.updateDate).opacityTextStyle()
@@ -74,11 +77,11 @@ export default struct TaskItem {
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       Column() {
-        Text('开启/关闭编辑模式')
-          .opacityTextStyle()
-          .onClick(() => {
-            this.isEditMode = !this.isEditMode
-          })
+        // Text('开启/关闭编辑模式')
+        //   .opacityTextStyle()
+        //   .onClick(() => {
+        //     this.isEditMode = !this.isEditMode
+        //   })
         this.TaskInfo()
         if (this.isExpanded) {
           Blank()
@@ -89,6 +92,7 @@ export default struct TaskItem {
             onConfirm:(value: number) => { // 确认更新进度后
               this.latestProgress = value // 把最新进度设置为滑动后的值
               this.updateDate = currentTime() // 使用最新的系统日期更新
+              console.log('latestProgress === ', this.latestProgress)
               // 如果更新指定索引的任务成功
               if (myTasks.updateTo(this.index, this.latestProgress, this.updateDate)) {
                 this.totalProgressChanged = !this.totalProgressChanged // 整体进度发生变化
@@ -107,7 +111,7 @@ export default struct TaskItem {
       .width(CommonConstants.FULL_WIDTH)
       .height(this.isExpanded ? $r('app.float.expanded_item_height') : $r('app.float.edit_panel_height'))
       .opacity(// 如果进度拉满（100），则整个容器变成半透明状态。否则不透明状态
-        this.latestProgress ===  CommonConstants.SLIDER_MAX_VALUE ? CommonConstants.OPACITY : CommonConstants.NO_OPACITY
+        this.latestProgress ===  CommonConstants.SLIDER_MAX_VALUE && !this.isEditMode ? CommonConstants.OPACITY : CommonConstants.NO_OPACITY
       )
       .borderRadius(CommonConstants.LIST_RADIUS) // 单个任务列表
       .animation({ duration: CommonConstants.DURATION }) // 属性动画：
@@ -120,17 +124,20 @@ export default struct TaskItem {
         }
         console.log('isEditMode ===' + '' + this.isEditMode);
 
-        if (!this.isEditMode) { //非编辑状态下
+        if (this.isEditMode) { //非编辑状态下
           // 显示动画：折叠、展开效果
           animateTo({ duration: CommonConstants.DURATION }, () => {
             this.isExpanded = !this.isExpanded
           })
 
           this.clickIndex = this.index // 点击索引赋值
+        } else {
+          promptAction.showToast({
+            message: $r('app.string.only_expand_under_edit_mode'),
+            duration: CommonConstants.TOAST_TIME,
+            bottom: CommonConstants.TOAST_MARGIN_BOTTOM
+          })
         }
-        // else {
-        //   this.isEditMode = false
-        // }
       })
       .padding({
         top: $r('app.float.list_padding_top'),
@@ -147,6 +154,7 @@ export default struct TaskItem {
             .selectedColor($r('app.color.main_blue'))
             .onChange((isChecked: boolean) => { // 点击后，给任务选择状态赋值
               this.selectedTasks[this.index] = isChecked
+              this.totalCheckedChanged = !this.totalCheckedChanged
             })
             // 选中状态，与点击绑定
             .select(this.selectedTasks[this.index])
@@ -155,7 +163,7 @@ export default struct TaskItem {
         .justifyContent(FlexAlign.Center)
       }
     }
-    .height(this.isExpanded ? $r('app.float.expanded_item_height') : $r('app.float.list_item_height'))
+    .height(this.isExpanded ? $r('app.float.expanded_item_height') : $r('app.float.edit_panel_height'))
   }
 
 }

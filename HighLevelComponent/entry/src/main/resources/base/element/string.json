@@ -71,6 +71,10 @@
     {
       "name": "input_target_name",
       "value": "输入名称"
+    },
+    {
+      "name": "only_expand_under_edit_mode",
+      "value": "仅在编辑模式下可以展开"
     }
   ]
 }

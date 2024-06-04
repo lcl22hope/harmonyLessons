@@ -2,7 +2,7 @@ import AllTasks from '../models/Tasks'
 
 @Entry
 @Component
-struct TaksOverviewPage {
+export default struct TaksOverview {
   // 接收来上一级的时间信息，Prop 可以有默认值
   @Prop latestUpdate: string = '2024-06-02 16:41:55'
 
@@ -66,7 +66,9 @@ struct TaksOverviewPage {
       this.Header()
       this.TotalProgress()
     }
-    .height('100%')
+    .borderRadius(12)
+    .backgroundColor(Color.White)
+    // .height('100%')
     .width('100%')
   }
 }

@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "pages/TaksOverviewPage"
+    "components/TaksOverview",
+    "pages/HomePage"
   ]
 }
